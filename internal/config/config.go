@@ -7,9 +7,13 @@ import (
 )
 
 type Config struct {
-	DBUrl  string `yaml:"DBUrl"`
-	JwtKey string `yaml:"jwtKey"`
-	Port   string `yaml:"port"`
+	DBHost     string `mapstructure:"DB_HOST"`
+	DBPort     string `mapstructure:"DB_PORT"`
+	DBUser     string `mapstructure:"DB_USER"`
+	DBPassword string `mapstructure:"DB_PASSWORD"`
+	DBName     string `mapstructure:"DB_NAME"`
+	JwtKey     string `yaml:"JWT_KEY"`
+	Port       string `yaml:"PORT"`
 }
 
 func LoadConfig(path string) (*Config, error) {

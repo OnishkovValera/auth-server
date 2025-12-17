@@ -29,7 +29,11 @@ func NewApp(configPath string) *App {
 func (app *App) Run() {
 	jwtMaker := jwt.NewMaker()
 	vld := validator.New()
-	postgresDB, err := db.CreateDB(app.cnf.DBUrl)
+
+	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=disable",
+		app.cnf.DBUser, app.cnf.DBPassword, app.cnf.DBHost, app.cnf.DBPort, app.cnf.DBName)
+
+	postgresDB, err := db.CreateDB(dsn)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -41,7 +45,8 @@ func (app *App) Run() {
 	if err != nil {
 		panic(err)
 	}
-	err = http.ListenAndServe(app.cnf.Port, rt)
+	fmt.Println(fmt.Sprintf(":%s", app.cnf.Port))
+	err = http.ListenAndServe(fmt.Sprintf(":%s", app.cnf.Port), rt)
 	if err != nil {
 		fmt.Println(err)
 		panic(err)

@@ -6,9 +6,5 @@ import (
 )
 
 func CreateDB(pathToDB string) (*sqlx.DB, error) {
-	connect, err := sqlx.Connect("postgres", pathToDB)
-	if err != nil {
-		return nil, err
-	}
-	return connect, nil
+	return sqlx.Connect("postgres", pathToDB)
 }

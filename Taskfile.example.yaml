@@ -1,0 +1,30 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - echo "HI"
+    silent: true
+
+  build:
+    cmds:
+      - mkdir bin
+      - cp internal/config/config.yaml ./bin/config.yaml
+      - echo "copy conf file"
+      - go build -o bin/app.exe ./cmd/server/main.go
+
+  run:
+    deps: [build]
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: postgres
+      JWT_KEY: key
+      PORT: 8080
+    cmd: ./bin/app.exe
+
+  clean:
+    cmds:
+      - rm -rf ./bin

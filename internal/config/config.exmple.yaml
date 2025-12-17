@@ -1,3 +1,7 @@
-DBUrl: postgres://user:password@localhost:5432/db_name?sslmode=disable
-jwtKey: "yourKey"
-port: :8080
+DB_HOST: localhost
+DB_PORT: 5432
+DB_USER: name
+DB_PASSWORD: password
+DB_NAME: auth-service
+JWT_KEY: "key"
+PORT: 8080
