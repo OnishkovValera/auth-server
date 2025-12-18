@@ -1,9 +1,10 @@
 package dto
 
 type JWTDto struct {
-	Jwt string `json:"jwt"`
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
 }
 
-func NewJWTDto(token string) *JWTDto {
-	return &JWTDto{token}
+func NewJWTDto(accessToken string, refreshToken string) *JWTDto {
+	return &JWTDto{accessToken, refreshToken}
 }

@@ -1,15 +1,22 @@
 package middleware
 
 import (
-	"auth-server/internal/http/handlers"
-	"auth-server/internal/jwt"
+	"auth-server/internal/service"
 	"fmt"
 	"net/http"
 
 	"strings"
 )
 
-func JWTAuthMiddleware(maker *jwt.Maker) func(handler http.Handler) http.Handler {
+type JWTMiddleware struct {
+	ah *service.AuthorizationService
+}
+
+func NewJWTMiddleware(ah *service.AuthorizationService) *JWTMiddleware {
+	return &JWTMiddleware{ah: ah}
+}
+
+func (jw *JWTMiddleware) JWTAuthMiddleware() func(handler http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			token := r.Header.Get("Authorization")
@@ -18,7 +25,7 @@ func JWTAuthMiddleware(maker *jwt.Maker) func(handler http.Handler) http.Handler
 				token = strings.TrimPrefix(token, prefix)
 			}
 
-			checkJWT, err := handlers.CheckJWT(token, maker)
+			checkJWT, err := jw.ah.CheckJWT(token)
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
 				_, err := w.Write([]byte(err.Error()))

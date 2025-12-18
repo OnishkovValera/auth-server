@@ -1,46 +1,45 @@
 package handlers
 
 import (
-	"auth-server/internal/jwt"
-	"auth-server/internal/model/dto"
+	"auth-server/internal/service"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
-func JsonReturnJWT(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	user := dto.NewUserDto()
-	err := json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
-		_ = fmt.Errorf("json decoding error: %s", err)
-		return
-	}
-
-	maker := jwt.NewMaker()
-	createJWT, err := maker.CreateJWT(user.Login)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	jwtDto := dto.NewJWTDto(createJWT)
-	err = json.NewEncoder(w).Encode(jwtDto)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+type AuthorizationHandler struct {
+	s *service.AuthorizationService
 }
 
-func CheckJWT(token string, maker *jwt.Maker) (bool, error) {
-	if isValid, err := maker.ParseJWT(token); !isValid || err != nil {
-		return false, err
-	}
-	return true, nil
+func NewAuthorizationHandler(s *service.AuthorizationService) *AuthorizationHandler {
+	return &AuthorizationHandler{s: s}
 }
 
-func Register(writer http.ResponseWriter, request *http.Request) {
+func (h *AuthorizationHandler) GetUserInfoHandler(writer http.ResponseWriter, request *http.Request) {
 	defer request.Body.Close()
+	rawToken, err := h.getRawToken(request)
+	claims, err := h.s.GetClaimsFromToken(rawToken)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	writer.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(writer).Encode(claims)
+	if err != nil {
+		return
+	}
 }
 
-func MyInfo(writer http.ResponseWriter, request *http.Request) {
+func (h *AuthorizationHandler) getRawToken(r *http.Request) (string, error) {
+	rawToken := r.Header.Get("Authorization")
+	prefix := "Bearer "
+	if strings.HasPrefix(rawToken, prefix) {
+		rawToken = strings.TrimPrefix(rawToken, prefix)
+		return rawToken, nil
+	}
+	NoBearerToken := errors.New("no bearer token found")
+	return "", NoBearerToken
+
 }

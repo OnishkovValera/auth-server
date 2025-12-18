@@ -3,9 +3,13 @@ package entity
 import "time"
 
 type RefreshToken struct {
-	id        int       `db:"id"`
-	userId    int       `db:"user_id"`
-	tokenHash string    `db:"token_hash"`
-	expiredAt time.Time `db:"expired_at"`
-	revoked   bool      `db:"revoked_at"`
+	Id        int       `db:"id"`
+	UserId    int       `db:"user_id"`
+	TokenHash string    `db:"token_hash"`
+	ExpiredAt time.Time `db:"expired_at"`
+	Revoked   bool      `db:"revoked"`
+}
+
+func NewRefreshToken(userId int, tokenHash string, expiredAt time.Time) *RefreshToken {
+	return &RefreshToken{UserId: userId, TokenHash: tokenHash, ExpiredAt: expiredAt, Revoked: false}
 }
