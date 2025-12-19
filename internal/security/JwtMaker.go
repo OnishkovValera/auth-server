@@ -7,8 +7,6 @@ import (
 	"github.com/google/uuid"
 )
 
-var key = "89shf84928bv39"
-
 type JwtMaker struct {
 	secretKey string
 }
@@ -48,9 +46,16 @@ func (jwtMaker *JwtMaker) ParseJWT(tokenString string) (bool, error) {
 	return true, nil
 }
 
-func (jwtMaker *JwtMaker) GetClaimsFromToken(tokenString string) (jwt.Claims, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+func (jwtMaker *JwtMaker) GetClaimsFromToken(tokenString string) (*Claims, error) {
+	claims := &Claims{}
+
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(jwtMaker.secretKey), nil
 	})
-	return token.Claims, err
+
+	if err != nil || !token.Valid {
+		return nil, err
+	}
+
+	return claims, err
 }

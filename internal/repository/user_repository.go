@@ -41,7 +41,7 @@ func (r *PostgresUserRepository) DeleteUser(ctx context.Context, userId int) err
 
 func (r *PostgresUserRepository) GetUser(ctx context.Context, userId int) (*entity.User, error) {
 	var user entity.User
-	err := r.db.GetContext(ctx, &user, `SELECT * FROM users WHERE id=:id`, map[string]any{"id": userId})
+	err := r.db.GetContext(ctx, &user, `SELECT * FROM users WHERE id=$1`, userId)
 	return &user, err
 }
 

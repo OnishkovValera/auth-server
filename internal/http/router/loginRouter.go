@@ -24,12 +24,11 @@ func (mRouter *MainRouter) GetMux() *chi.Mux {
 	rt.Use(middleware.Recoverer)
 	rt.Use(middleware.StripSlashes)
 	rt.Post("/register", mRouter.userHandler.CreateUser)
-	rt.Post("/login", mRouter.userHandler.Login)
-	rt.Post("/refresh", mRouter.userHandler.Refresh)
+	rt.Post("/login", mRouter.authorizationHandler.Login)
+	rt.Post("/refresh", mRouter.authorizationHandler.Refresh)
 	rt.Group(func(r chi.Router) {
 		r.Use(mRouter.jwtMdw.JWTAuthMiddleware())
-		r.Get("/info", mRouter.authorizationHandler.GetUserInfoHandler)
+		r.Get("/info", mRouter.userHandler.GetUserInfoHandler)
 	})
-
 	return rt
 }

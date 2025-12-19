@@ -44,7 +44,7 @@ func (app *App) Run() {
 	authService := service.NewAuthorizationService(jwtMaker, tokenRepo, userRepo)
 	userService := service.NewUserService(userRepo, authService)
 	userHandler := handlers.NewUserHandler(vld, userService)
-	authHandler := handlers.NewAuthorizationHandler(authService)
+	authHandler := handlers.NewAuthorizationHandler(authService, vld)
 	jwtMiddleware := mdw.NewJWTMiddleware(authService)
 	rt := router.NewRouter(authHandler, userHandler, jwtMiddleware)
 

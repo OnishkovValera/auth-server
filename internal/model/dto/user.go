@@ -10,3 +10,7 @@ type UserDto struct {
 func NewUserDto() *UserDto {
 	return &UserDto{}
 }
+
+func NewUserDtoWithParams(login string, name string, surname string) *UserDto {
+	return &UserDto{Login: login, Name: name, Surname: surname}
+}

@@ -5,6 +5,7 @@ import (
 	"auth-server/internal/model/entity"
 	"auth-server/internal/service"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -60,65 +61,36 @@ func (h *UserHandler) CreateUser(writer http.ResponseWriter, request *http.Reque
 	writer.Write([]byte(strconv.Itoa(user.Id)))
 }
 
-func (h *UserHandler) GetUserInfo(writer http.ResponseWriter, request *http.Request) {
+func (h *UserHandler) GetUserInfoHandler(writer http.ResponseWriter, request *http.Request) {
 	defer request.Body.Close()
-	rawToken := request.Header.Get("Authorization")
+	rawToken, err := h.getRawToken(request)
+	user, err := h.userService.GetUserInfo(request.Context(), rawToken)
+	if err != nil {
+		writer.WriteHeader(http.StatusBadRequest)
+		writer.Write([]byte(err.Error()))
+		return
+	}
+	userDto := dto.NewUserDtoWithParams(user.Login, user.Name, user.Surname)
+
+	body, err := json.Marshal(userDto)
+	if err != nil {
+		writer.WriteHeader(http.StatusBadRequest)
+		writer.Write([]byte(err.Error()))
+		return
+	}
+	writer.WriteHeader(http.StatusOK)
+	writer.Write(body)
+}
+
+func (h *UserHandler) getRawToken(r *http.Request) (string, error) {
+	rawToken := r.Header.Get("Authorization")
 	prefix := "Bearer "
 	if strings.HasPrefix(rawToken, prefix) {
 		rawToken = strings.TrimPrefix(rawToken, prefix)
+		return rawToken, nil
 	}
-	claims, err := h.userService.GetDataFromUser(rawToken)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	writer.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(writer).Encode(claims)
-	if err != nil {
-		return
-	}
-}
-
-func (h *UserHandler) Login(writer http.ResponseWriter, request *http.Request) {
-	defer request.Body.Close()
-	login := dto.NewLoginRequest()
-	err := json.NewDecoder(request.Body).Decode(login)
-	if err != nil {
-		fmt.Println(err)
-		writer.WriteHeader(http.StatusBadRequest)
-		writer.Write([]byte(err.Error()))
-		return
-	}
-	err = h.validator.Struct(login)
-	if err != nil {
-		fmt.Println(err)
-		writer.WriteHeader(http.StatusBadRequest)
-		writer.Write([]byte(err.Error()))
-		return
-	}
-
-	token, err := h.userService.Login(request.Context(), login)
-	if err != nil {
-		writer.WriteHeader(http.StatusBadRequest)
-		writer.Write([]byte(err.Error()))
-		return
-	}
-
-	jsonToken, err := json.Marshal(token)
-	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		writer.Write([]byte(err.Error()))
-		return
-	}
-	writer.WriteHeader(http.StatusOK)
-	_, err = writer.Write(jsonToken)
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-}
-
-func (h *UserHandler) Refresh(writer http.ResponseWriter, request *http.Request) {
+	NoBearerToken := errors.New("no bearer token found")
+	return "", NoBearerToken
 
 }
 
